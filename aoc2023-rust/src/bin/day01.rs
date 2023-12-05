@@ -1,4 +1,4 @@
-const WORD_DIGIT_CONVERSIONS: [&str; 9] = [
+const DIGIT_WORDS: [&str; 9] = [
     "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
@@ -9,18 +9,17 @@ fn main() {
 }
 
 fn part_one(input: &str) -> u32 {
-    let digits_iter = input.lines().map(|line| {
-        line.chars()
-            .filter_map(|r#char| r#char.to_digit(10))
-            .collect::<Vec<u32>>()
+    let iter = input.lines().map(|line| {
+        let digits = line.chars().filter_map(|r#char| r#char.to_digit(10));
+        let digits = digits.collect::<Vec<u32>>();
+        digits.first().unwrap() * 10 + digits.last().unwrap()
     });
-    let first_last = digits_iter.map(|digits| digits.first().unwrap() * 10 + digits.last().unwrap());
-    first_last.sum::<u32>()
+    iter.sum()
 }
 
 fn part_two(input: &str) -> u32 {
     let mut input = input.to_string();
-    for (digit, word) in WORD_DIGIT_CONVERSIONS.iter().enumerate() {
+    for (digit, word) in DIGIT_WORDS.iter().enumerate() {
         input = input.replace(word, &format!("{}{}{0}", word, digit + 1));
     }
     part_one(&input)
