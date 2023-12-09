@@ -9,12 +9,16 @@ fn main() {
 }
 
 fn part_one(input: &str) -> u32 {
-    let iter = input.lines().map(|line| {
-        let digits = line.chars().filter_map(|r#char| r#char.to_digit(10));
-        let digits = digits.collect::<Vec<u32>>();
-        digits.first().unwrap() * 10 + digits.last().unwrap()
-    });
-    iter.sum()
+    input
+        .lines()
+        .map(|line| {
+            let digits = line
+                .chars()
+                .filter_map(|r#char| r#char.to_digit(10))
+                .collect::<Vec<u32>>();
+            digits.first().unwrap() * 10 + digits.last().unwrap()
+        })
+        .sum()
 }
 
 fn part_two(input: &str) -> u32 {
