@@ -23,7 +23,7 @@ fn part_one(input: &str) -> u32 {
 
 fn part_two(input: &str) -> u32 {
     let mut input = input.to_string();
-    for (digit, word) in DIGIT_WORDS.iter().enumerate() {
+    for (digit, word) in DIGIT_WORDS.into_iter().enumerate() {
         input = input.replace(word, &format!("{}{}{0}", word, digit + 1));
     }
     part_one(&input)
