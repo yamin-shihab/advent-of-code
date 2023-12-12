@@ -2,133 +2,87 @@ use std::collections::hash_map::HashMap;
 
 fn main() {
     let input = include_str!("../../inputs/day03.txt");
-    println!("Part one: {}", part_one(input));
-    println!("Part two: {}", part_two(input));
+    let lines = lines(input);
+    let number_map = number_map(&lines);
+
+    let mut part1 = Vec::new();
+    let mut part2 = Vec::new();
+    for (y, l) in lines.into_iter().enumerate() {
+        for (x, c) in l
+            .into_iter()
+            .enumerate()
+            .filter(|(_, c)| !c.is_ascii_digit() && *c != '.')
+        {
+            let adjacent = adjacent(&number_map, x, y);
+            for number in adjacent.iter() {
+                part1.push(*number);
+            }
+            if c == '*' && adjacent.len() == 2 {
+                part2.push(adjacent.into_iter().product::<u32>());
+            }
+        }
+    }
+
+    println!("Part one: {}", part1.into_iter().sum::<u32>());
+    println!("Part two: {}", part2.into_iter().sum::<u32>());
 }
 
-fn part_one(input: &str) -> u32 {
-    let lines = input
+fn lines(input: &str) -> Vec<Vec<char>> {
+    input
         .lines()
         .map(|line| {
             let mut line = line.chars().collect::<Vec<char>>();
             line.push('.');
             line
         })
-        .collect::<Vec<Vec<char>>>();
-    let mut numbers = HashMap::new();
-    for y in 0..lines.len() {
-        let mut current = None;
-        let mut positions = Vec::new();
-        for x in 0..lines[y].len() {
-            let c = lines[y][x];
-            if let Some(d) = c.to_digit(10) {
-                if let Some(n) = current {
-                    positions.push(x);
-                    current = Some(n * 10 + d);
-                } else {
-                    positions.push(x);
-                    current = Some(d);
-                }
-            } else {
-                if let Some(n) = current {
-                    for position in positions.clone() {
-                        numbers.insert((position, y), n);
-                    }
-                }
-                positions.clear();
-                current = None;
-            }
-        }
-    }
-    let mut parts = Vec::new();
-    for y in 0..lines.len() {
-        for x in 0..lines[y].len() {
-            let c = lines[y][x];
-            if !c.is_ascii_digit() && c != '.' {
-                let mut adjacent = vec![
-                    numbers.get(&(x + 1, y + 1)),
-                    numbers.get(&(x + 1, y - 1)),
-                    numbers.get(&(x + 1, y)),
-                    numbers.get(&(x - 1, y + 1)),
-                    numbers.get(&(x - 1, y - 1)),
-                    numbers.get(&(x - 1, y)),
-                    numbers.get(&(x, y + 1)),
-                    numbers.get(&(x, y - 1)),
-                ]
-                .into_iter()
-                .filter_map(|number| number)
-                .collect::<Vec<&u32>>();
-                adjacent.sort();
-                adjacent.dedup();
-                println!("{:?}", adjacent);
-                for number in adjacent {
-                    parts.push(*number);
-                }
-            }
-        }
-    }
-    parts.into_iter().sum()
+        .collect::<Vec<Vec<char>>>()
 }
 
-fn part_two(input: &str) -> u32 {
-    let lines = input
-        .lines()
-        .map(|line| {
-            let mut line = line.chars().collect::<Vec<char>>();
-            line.push('.');
-            line
-        })
-        .collect::<Vec<Vec<char>>>();
+fn number_map(lines: &[Vec<char>]) -> HashMap<(usize, usize), u32> {
     let mut numbers = HashMap::new();
-    for y in 0..lines.len() {
+    for (y, l) in lines.iter().enumerate() {
         let mut current = None;
         let mut positions = Vec::new();
-        for x in 0..lines[y].len() {
-            let c = lines[y][x];
-            if let Some(d) = c.to_digit(10) {
-                if let Some(n) = current {
-                    positions.push(x);
-                    current = Some(n * 10 + d);
-                } else {
-                    positions.push(x);
-                    current = Some(d);
+        for (x, c) in l.iter().enumerate() {
+            let Some(d) = c.to_digit(10) else {
+                let Some(n) = current else { continue };
+                for position in positions.iter() {
+                    numbers.insert((*position, y), n);
                 }
-            } else {
-                if let Some(n) = current {
-                    for position in positions.clone() {
-                        numbers.insert((position, y), n);
-                    }
-                }
-                positions.clear();
                 current = None;
-            }
+                positions.clear();
+                continue;
+            };
+
+            current = match current {
+                Some(n) => Some(n * 10 + d),
+                None => Some(d),
+            };
+            positions.push(x);
         }
     }
-    let mut parts = Vec::new();
-    for y in 0..lines.len() {
-        for x in 0..lines[y].len() {
-            let c = lines[y][x];
-            if c == '*' {
-                let mut adjacent = vec![
-                    numbers.get(&(x + 1, y + 1)),
-                    numbers.get(&(x + 1, y - 1)),
-                    numbers.get(&(x + 1, y)),
-                    numbers.get(&(x - 1, y + 1)),
-                    numbers.get(&(x - 1, y - 1)),
-                    numbers.get(&(x - 1, y)),
-                    numbers.get(&(x, y + 1)),
-                    numbers.get(&(x, y - 1)),
-                ]
-                .into_iter()
-                .filter_map(|number| number)
-                .collect::<Vec<&u32>>();
-                adjacent.sort();
-                adjacent.dedup();
-                if adjacent.len() == 2 {
-                    parts.push(adjacent.into_iter().product::<u32>());
-                }
-            }
+    numbers
+}
+
+fn adjacent(number_map: &HashMap<(usize, usize), u32>, x: usize, y: usize) -> Vec<u32> {
+    let mut adjacent = Vec::new();
+    for n in [
+        number_map.get(&(x + 1, y + 1)),
+        number_map.get(&(x + 1, y - 1)),
+        number_map.get(&(x + 1, y)),
+        number_map.get(&(x - 1, y + 1)),
+        number_map.get(&(x - 1, y - 1)),
+        number_map.get(&(x - 1, y)),
+        number_map.get(&(x, y + 1)),
+        number_map.get(&(x, y - 1)),
+    ] {
+        if !adjacent.contains(&n) {
+            adjacent.push(n);
         }
     }
-    parts.into_iter().sum()
+    adjacent
+        .into_iter()
+        .flatten()
+        .copied()
+        .collect::<Vec<u32>>()
 }

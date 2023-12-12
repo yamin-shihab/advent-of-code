@@ -4,11 +4,16 @@ const DIGIT_WORDS: [&str; 9] = [
 
 fn main() {
     let input = include_str!("../../inputs/day01.txt");
-    println!("Part one: {}", part_one(input));
-    println!("Part two: {}", part_two(input));
+    println!("Part one: {}", calibration_sum(input));
+
+    let mut input = input.to_string();
+    for (digit, word) in DIGIT_WORDS.into_iter().enumerate() {
+        input = input.replace(word, &format!("{}{}{0}", word, digit + 1));
+    }
+    println!("Part two: {}", calibration_sum(&input));
 }
 
-fn part_one(input: &str) -> u32 {
+fn calibration_sum(input: &str) -> u32 {
     input
         .lines()
         .map(|line| {
@@ -19,12 +24,4 @@ fn part_one(input: &str) -> u32 {
             digits.first().unwrap() * 10 + digits.last().unwrap()
         })
         .sum()
-}
-
-fn part_two(input: &str) -> u32 {
-    let mut input = input.to_string();
-    for (digit, word) in DIGIT_WORDS.into_iter().enumerate() {
-        input = input.replace(word, &format!("{}{}{0}", word, digit + 1));
-    }
-    part_one(&input)
 }

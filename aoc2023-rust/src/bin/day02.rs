@@ -14,6 +14,7 @@ fn part_one(input: &str) -> u32 {
                 let Ok(number) = token.parse::<u32>() else {
                     continue;
                 };
+
                 match split.next().unwrap() {
                     "red" if number > 12 => return 0,
                     "green" if number > 13 => return 0,
@@ -36,6 +37,7 @@ fn part_two(input: &str) -> u32 {
                 let Ok(number) = token.parse::<u32>() else {
                     continue;
                 };
+
                 match split.next().unwrap() {
                     "red" if number > red => red = number,
                     "green" if number > green => green = number,
